@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from .models import LoginToken, TelegramUser
 from django.http import JsonResponse
@@ -16,22 +16,29 @@ def login_view(request):
     return redirect('home')
 
 def generate_token(request):
-    if request.user.is_authenticated:
-        token = LoginToken.objects.create(user=request.user)
-        bot_username = 'YourBotUsername'
-        return JsonResponse({'url': f'https://t.me/{bot_username}?start={token.token}'})
-    return JsonResponse({'error': 'Unauthorized'}, status=401)
-
+    token = LoginToken.objects.create()
+    bot_username = 'subhumanAi_bot'
+    return JsonResponse({'url': f'https://t.me/{bot_username}?start={token.token}'})
+    
 def check_token(request, token):
     try:
         login_token = LoginToken.objects.get(token=token)
+        
         if login_token.is_valid():
-            telegram_user = TelegramUser.objects.get(user=login_token.user)
-            login(request, login_token.user)
-            login_token.delete()
-            return JsonResponse({'status': 'success'})
-    except:
-        pass
+            telegram_user = login_token.telegram_user
+
+            user, created = User.objects.get_or_create(
+                username=telegram_user.username
+            )
+            if created:
+                user.set_unusable_password()
+                user.save
+
+            if user is not None:
+                login(request, user)
+                return JsonResponse({'status': 'success'})
+    except LoginToken.DoesNotExist:
+        return JsonResponse({'status': 'invalid'})
     return JsonResponse({'status': 'invalid'})
 
 @csrf_exempt

@@ -7,7 +7,7 @@
             const response = await fetch('/generate-token/');
             const data = await response.json();
             if(data.url){
-                window.location.href = data.url;
+                window.open(data.url,'_blank');
                 checkLogin(data.url.split('start=')[1]);
             }
         }
@@ -16,9 +16,10 @@
             const interval = setInterval(async () => {
                 const res = await fetch(`/check-token/${token}/`);
                 const status = await res.json();
+                console.log(status)
                 if(status.status === 'success'){
                     clearInterval(interval);
-                    window.location.reload();
+                    window.location.href('loginxdxdxd');
                 }
             }, 3000);
         }
