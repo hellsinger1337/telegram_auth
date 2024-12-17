@@ -1,0 +1,4 @@
+Django
+python-telegram-bot
+channels
+channels_redis

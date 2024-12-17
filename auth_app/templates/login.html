@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <script>
+        async function loginTelegram() {
+            const response = await fetch('/generate-token/');
+            const data = await response.json();
+            if(data.url){
+                window.location.href = data.url;
+                checkLogin(data.url.split('start=')[1]);
+            }
+        }
+
+        async function checkLogin(token){
+            const interval = setInterval(async () => {
+                const res = await fetch(`/check-token/${token}/`);
+                const status = await res.json();
+                if(status.status === 'success'){
+                    clearInterval(interval);
+                    window.location.reload();
+                }
+            }, 3000);
+        }
+    </script>
+</head>
+<body>
+    <button onclick="loginTelegram()">Войти через Telegram</button>
+</body>
+</html>
